@@ -1,96 +1,88 @@
-const lessons = {
-    basico: ["asdfg", "hjklç", "asdfg hjklç", "fdfs jklk"],
-    medio: ["casa carro", "escola teclado", "computador curso", "brasil tecnologia"],
-    avancado: [
-        "A prática leva à perfeição em tudo o que fazemos.",
-        "Desenvolver código limpo é uma arte fundamental.",
-        "O aprendizado contínuo abre portas para o futuro."
-    ]
-};
+const courseData = [
+    { name: "Início: Letras Base", content: "asdfg hjklç" },
+    { name: "Expansão: Teclas Superiores", content: "querty uiop" },
+    { name: "Palavras Comuns", content: "casa café balão informática" },
+    { name: "Frases Completas", content: "A prática constante leva à perfeição técnica." },
+    { name: "Desafio Final", content: "Programação e lógica são fundamentais para o sucesso." }
+];
 
-let currentLevel = 'basico';
-let lessonIndex = 0;
-let isCareer = false;
+let currentLevel = 0;
+let currentCharIndex = 0;
+let mistakes = 0;
 let startTime;
 
-const textDisplay = document.getElementById('text-display');
-const textInput = document.getElementById('text-input');
-const progressDisplay = document.getElementById('progress-display');
+const wordDisplay = document.getElementById('word-display');
+const hiddenInput = document.getElementById('hidden-input');
+const progressBar = document.getElementById('progress-bar');
 
-function startMode(mode) {
-    isCareer = mode === 'carreira';
-    currentLevel = isCareer ? 'basico' : mode;
-    lessonIndex = 0;
+function initLevel() {
+    const text = courseData[currentLevel].content;
+    wordDisplay.innerHTML = '';
+    currentCharIndex = 0;
     
-    document.getElementById('mode-selection').classList.add('hidden');
-    document.getElementById('play-area').classList.remove('hidden');
-    
-    loadLesson();
-}
+    document.getElementById('level-name').innerText = courseData[currentLevel].name;
 
-function loadLesson() {
-    const currentText = lessons[currentLevel][lessonIndex];
-    textDisplay.innerHTML = currentText.split('').map(char => `<span>${char}</span>`).join('');
-    textInput.value = "";
-    document.getElementById('lesson-title').innerText = `Nível ${currentLevel.toUpperCase()} - Lição ${lessonIndex + 1}`;
-    textInput.focus();
-    startTime = new Date();
-}
-
-textInput.addEventListener('input', () => {
-    const arrayQuote = textDisplay.querySelectorAll('span');
-    const arrayValue = textInput.value.split('');
-    let done = true;
-
-    arrayQuote.forEach((charSpan, index) => {
-        const char = arrayValue[index];
-        if (char == null) {
-            charSpan.classList.remove('correct', 'incorrect');
-            done = false;
-        } else if (char === charSpan.innerText) {
-            charSpan.classList.add('correct');
-            charSpan.classList.remove('incorrect');
-        } else {
-            charSpan.classList.add('incorrect');
-            charSpan.classList.remove('correct');
-            done = false;
-        }
+    text.split('').forEach((char, i) => {
+        const span = document.createElement('div');
+        span.classList.add('char-box');
+        span.innerText = char === ' ' ? '␣' : char; // Representação visual para espaço
+        if (i === 0) span.classList.add('current');
+        wordDisplay.appendChild(span);
     });
-
-    if (done) nextStep();
-});
-
-function nextStep() {
-    lessonIndex++;
-    
-    // Verifica se terminou as lições do nível atual
-    if (lessonIndex >= lessons[currentLevel].length) {
-        if (isCareer) {
-            if (currentLevel === 'basico') { currentLevel = 'medio'; lessonIndex = 0; }
-            else if (currentLevel === 'medio') { currentLevel = 'avancado'; lessonIndex = 0; }
-            else { alert("Parabéns! Você concluiu a carreira!"); return resetGame(); }
-        } else {
-            alert("Nível Concluído!");
-            return resetGame();
-        }
-    }
     
     updateProgress();
-    loadLesson();
+}
+
+window.addEventListener('click', () => hiddenInput.focus());
+
+hiddenInput.addEventListener('input', (e) => {
+    const targetText = courseData[currentLevel].content;
+    const typedChar = e.target.value.slice(-1);
+    const charBoxes = document.querySelectorAll('.char-box');
+
+    if (!startTime) startTime = new Date();
+
+    if (typedChar === targetText[currentCharIndex]) {
+        charBoxes[currentCharIndex].classList.remove('current', 'wrong');
+        charBoxes[currentCharIndex].classList.add('correct');
+        
+        currentCharIndex++;
+        
+        if (currentCharIndex < targetText.length) {
+            charBoxes[currentCharIndex].classList.add('current');
+        } else {
+            finishLevel();
+        }
+    } else {
+        charBoxes[currentCharIndex].classList.add('wrong');
+        mistakes++;
+        updateAccuracy();
+    }
+    
+    hiddenInput.value = ''; // Limpa para a próxima letra
+});
+
+function finishLevel() {
+    currentLevel++;
+    if (currentLevel < courseData.length) {
+        initLevel();
+    } else {
+        alert("Parabéns! Você concluiu o treinamento profissional!");
+        currentLevel = 0;
+        initLevel();
+    }
 }
 
 function updateProgress() {
-    const total = isCareer ? 
-        (lessons.basico.length + lessons.medio.length + lessons.avancado.length) : 
-        lessons[currentLevel].length;
-    
-    // Cálculo simples de progresso baseado no index
-    const perc = Math.round((lessonIndex / total) * 100);
-    progressDisplay.innerText = `${perc}%`;
+    const perc = (currentLevel / courseData.length) * 100;
+    progressBar.style.width = `${perc}%`;
 }
 
-function resetGame() {
-    document.getElementById('mode-selection').classList.remove('hidden');
-    document.getElementById('play-area').classList.add('hidden');
-    progressDisplay.innerText = "0%";
+function updateAccuracy() {
+    const totalTyped = currentCharIndex + mistakes;
+    const acc = Math.round(((totalTyped - mistakes) / totalTyped) * 100);
+    document.getElementById('accuracy').innerText = `${acc}%`;
 }
+
+// Inicializa o primeiro nível
+initLevel();
