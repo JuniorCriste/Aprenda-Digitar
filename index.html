@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aprenda Digitar - Treinamento Profissional</title>
+    <title>Aprenda Digitar - Profissional</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,35 +11,23 @@
 <div class="app-container">
     <nav class="top-bar">
         <div class="logo">Aprenda<span>Digitar</span></div>
-        <div class="nav-status">
-            <span id="level-name">Carregando...</span>
-        </div>
-        <div class="nav-icons">
-            <button title="Progresso">📊 <span id="accuracy">100%</span></button>
+        <div id="level-name" class="level-indicator">Carregando...</div>
+        <div class="stats-top">
+            <span>Erros: <strong id="mistake-count">0</strong></span>
+            <span>WPM: <strong id="wpm-display">0</strong></span>
         </div>
     </nav>
 
     <main class="trainer-box">
-        <div class="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-
+        <div class="progress-container"><div id="progress-bar"></div></div>
         <div id="word-display" class="word-display"></div>
-
         <input type="text" id="hidden-input" autocomplete="off" autofocus>
-        
-        <div class="keyboard-hint">
-            Pressione as teclas para começar. Use acentos normalmente.
-        </div>
     </main>
 
-    <div class="footer-stats">
-        <div class="stat-item">WPM: <span id="wpm">0</span></div>
-        <div class="stat-item">Erros: <span id="mistake-count">0</span></div>
-    </div>
 <center>Junior Criste - Informaticode 2026</center>
 </div>
 
 <script src="script.js"></script>
 </body>
 </html>
+

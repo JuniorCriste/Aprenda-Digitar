@@ -4,8 +4,8 @@
     --primary: #3b82f6;
     --success: #10b981;
     --error: #ef4444;
-    --word1: #1e293b; /* Azul Escuro */
-    --word2: #64748b; /* Cinza Azulado */
+    --word1: #1e293b;
+    --word2: #64748b;
     --border: #e5e7eb;
 }
 
@@ -27,7 +27,6 @@ body {
 
 .word-display { display: flex; justify-content: center; gap: 6px; margin: 40px 0; flex-wrap: wrap; }
 
-/* Estilo Base das Letras */
 .char-box {
     width: 40px; height: 50px; border: 2px solid var(--border);
     border-radius: 8px; display: flex; align-items: center;
@@ -35,7 +34,6 @@ body {
     transition: all 0.1s;
 }
 
-/* CORES ALTERNADAS POR PALAVRA */
 .word-color-1 { color: var(--word1); border-color: #cbd5e1; }
 .word-color-2 { color: var(--word2); border-color: #e2e8f0; }
 

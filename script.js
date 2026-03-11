@@ -24,9 +24,12 @@ let currentLevelIdx = 0;
 let currentCharIdx = 0;
 let mistakes = 0;
 let isComposing = false;
+let startTime = null;
+let timerInterval = null;
 
 const wordDisplay = document.getElementById('word-display');
 const hiddenInput = document.getElementById('hidden-input');
+const wpmDisplay = document.getElementById('wpm-display');
 
 // --- ÁUDIO ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -40,33 +43,29 @@ function playSound(f, t, v, d) {
     o.start(); o.stop(audioCtx.currentTime + d);
 }
 
-// --- LOGICA DE CORES POR PALAVRA ---
 function loadLevel() {
     const text = levels[currentLevelIdx].content;
     document.getElementById('level-name').innerText = levels[currentLevelIdx].name;
     wordDisplay.innerHTML = '';
     currentCharIdx = 0;
+    startTime = null; // Reinicia o tempo
+    clearInterval(timerInterval);
+    wpmDisplay.innerText = "0";
 
     const words = text.split(' ');
     let charCounter = 0;
 
     words.forEach((word, wordIdx) => {
-        // Alterna entre cor 1 e cor 2
         const colorClass = (wordIdx % 2 === 0) ? 'word-color-1' : 'word-color-2';
-
-        // Cria os boxes das letras da palavra
         word.split('').forEach(char => {
             createCharBox(char, colorClass, charCounter);
             charCounter++;
         });
-
-        // Adiciona o espaço (exceto após a última palavra)
         if (wordIdx < words.length - 1) {
             createCharBox(' ', colorClass, charCounter);
             charCounter++;
         }
     });
-    
     hiddenInput.value = "";
     updateUI();
 }
@@ -79,13 +78,26 @@ function createCharBox(char, colorClass, index) {
     wordDisplay.appendChild(box);
 }
 
-// --- TRATAMENTO DE ACENTOS E INPUT ---
+// --- CONTROLO DE VELOCIDADE (WPM) ---
+function startTimer() {
+    startTime = new Date();
+    timerInterval = setInterval(() => {
+        const timeElapsed = (new Date() - startTime) / 60000; // minutos
+        if (timeElapsed > 0) {
+            const wpm = Math.round((currentCharIdx / 5) / timeElapsed);
+            wpmDisplay.innerText = wpm > 0 ? wpm : 0;
+        }
+    }, 1000);
+}
+
+// --- ACENTOS E INPUT ---
 hiddenInput.addEventListener('compositionstart', () => isComposing = true);
 hiddenInput.addEventListener('compositionend', (e) => {
     isComposing = false;
     handleInput(e.data);
 });
 hiddenInput.addEventListener('input', (e) => {
+    if (!startTime && e.data) startTimer(); // Inicia o tempo na primeira tecla
     if (!isComposing && e.data) handleInput(e.data);
 });
 
@@ -100,6 +112,7 @@ function handleInput(typedChar) {
         if (currentCharIdx < targetText.length) {
             boxes[currentCharIdx].classList.add('current');
         } else {
+            clearInterval(timerInterval);
             nextLevel();
         }
     } else {
