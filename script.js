@@ -17,93 +17,97 @@ const levels = [
     { name: "Nível 4: Textos", content: "Era uma vez um coelhinho curioso que adorava explorar o jardim atrás de sua casa, um dia ele encontrou uma borboleta colorida e decidiu segui-la entre as flores, no caminho conheceu um passarinho que cantava alegremente no galho de uma árvore, os três viraram amigos e passaram a tarde brincando e rindo juntos, e quando o sol se pôs o coelhinho voltou para casa muito feliz por ter feito novos amigos." },
     { name: "Nível 4: Textos", content: "Estudar informática é importante porque ajuda a entender e usar melhor as tecnologias presentes no dia a dia. Com esse conhecimento, é possível trabalhar com mais eficiência, resolver problemas e acessar mais oportunidades profissionais. Além disso, a informática desenvolve o raciocínio lógico e prepara as pessoas para um mundo cada vez mais digital..." },
     { name: "Nível 4: Textos", content: "Eu sempre me emociono quando ouço Michael Jackson; parece que cada música fala direto comigo, especialmente quando toca “Heal the world, make it a better place”. Às vezes fico arrepiado lembrando que preciso mudar também, e a frase “I'm starting with the man in the mirror” sempre me pega. Tem dias solitários em que coloco os fones e sinto conforto em “You are not alone, I am here with you”. Quando a emoção aperta de verdade, eu quase choro escutando “Will you be there”. E no meio de tudo isso, ainda sinto a força de “They don't care about us”, que me faz refletir sobre o mundo." }
-    
+
 ];
 
 let currentLevelIdx = 0;
 let currentCharIdx = 0;
 let mistakes = 0;
-let isComposing = false; // Trava para acentos
+let isComposing = false;
 
 const wordDisplay = document.getElementById('word-display');
 const hiddenInput = document.getElementById('hidden-input');
 
-// --- SISTEMA DE SOM ---
+// --- ÁUDIO ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playSound(freq, type, vol, duration) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+function playSound(f, t, v, d) {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+    g.gain.setValueAtTime(v, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + d);
 }
-const soundSuccess = () => playSound(600, 'sine', 0.1, 0.1);
-const soundError = () => playSound(150, 'triangle', 0.2, 0.2);
 
-// --- LÓGICA DE CARREGAMENTO ---
+// --- LOGICA DE CORES POR PALAVRA ---
 function loadLevel() {
-    const level = levels[currentLevelIdx];
-    document.getElementById('level-name').innerText = level.name;
+    const text = levels[currentLevelIdx].content;
+    document.getElementById('level-name').innerText = levels[currentLevelIdx].name;
     wordDisplay.innerHTML = '';
     currentCharIdx = 0;
-    
-    level.content.split('').forEach((char, i) => {
-        const box = document.createElement('div');
-        box.classList.add('char-box');
-        box.innerText = char === ' ' ? '␣' : char;
-        if (i === 0) box.classList.add('current');
-        wordDisplay.appendChild(box);
+
+    const words = text.split(' ');
+    let charCounter = 0;
+
+    words.forEach((word, wordIdx) => {
+        // Alterna entre cor 1 e cor 2
+        const colorClass = (wordIdx % 2 === 0) ? 'word-color-1' : 'word-color-2';
+
+        // Cria os boxes das letras da palavra
+        word.split('').forEach(char => {
+            createCharBox(char, colorClass, charCounter);
+            charCounter++;
+        });
+
+        // Adiciona o espaço (exceto após a última palavra)
+        if (wordIdx < words.length - 1) {
+            createCharBox(' ', colorClass, charCounter);
+            charCounter++;
+        }
     });
+    
     hiddenInput.value = "";
+    updateUI();
 }
 
-// --- CONTROLE DE ACENTUAÇÃO (COMPOSITION) ---
-hiddenInput.addEventListener('compositionstart', () => {
-    isComposing = true; // Usuário apertou o acento
-});
+function createCharBox(char, colorClass, index) {
+    const box = document.createElement('div');
+    box.classList.add('char-box', colorClass);
+    box.innerText = char === ' ' ? '␣' : char;
+    if (index === 0) box.classList.add('current');
+    wordDisplay.appendChild(box);
+}
 
+// --- TRATAMENTO DE ACENTOS E INPUT ---
+hiddenInput.addEventListener('compositionstart', () => isComposing = true);
 hiddenInput.addEventListener('compositionend', (e) => {
-    isComposing = false; // Usuário terminou de combinar (ex: acento + e)
-    handleInput(e.data); // Valida o caractere final gerado
+    isComposing = false;
+    handleInput(e.data);
 });
-
 hiddenInput.addEventListener('input', (e) => {
-    // Se não estiver no meio de uma acentuação, valida caracteres normais
-    if (!isComposing && e.inputType !== "deleteContentBackward") {
-        handleInput(e.data);
-    }
+    if (!isComposing && e.data) handleInput(e.data);
 });
 
 function handleInput(typedChar) {
-    if (!typedChar) return;
-
     const targetText = levels[currentLevelIdx].content;
-    const expectedChar = targetText[currentCharIdx];
     const boxes = document.querySelectorAll('.char-box');
 
-    if (typedChar === expectedChar) {
-        soundSuccess();
+    if (typedChar === targetText[currentCharIdx]) {
+        playSound(600, 'sine', 0.1, 0.1);
         boxes[currentCharIdx].classList.replace('current', 'correct');
-        boxes[currentCharIdx].classList.remove('wrong');
         currentCharIdx++;
-        
         if (currentCharIdx < targetText.length) {
             boxes[currentCharIdx].classList.add('current');
         } else {
             nextLevel();
         }
     } else {
-        soundError();
+        playSound(150, 'triangle', 0.2, 0.2);
         boxes[currentCharIdx].classList.add('wrong');
         mistakes++;
     }
-    
-    hiddenInput.value = ""; // Limpa para a próxima tecla
+    hiddenInput.value = "";
     updateUI();
 }
 
@@ -112,7 +116,7 @@ function nextLevel() {
     if (currentLevelIdx < levels.length) {
         setTimeout(loadLevel, 300);
     } else {
-        alert("Carreira concluída com sucesso!");
+        alert("Parabéns! Você concluiu o curso!");
         currentLevelIdx = 0;
         loadLevel();
     }
