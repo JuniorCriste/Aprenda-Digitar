@@ -13,7 +13,10 @@ const levels = [
     { name: "Nível 4: Frases grandes", content: "Falaram que a imaginação é mais importante que o conhecimento, será?" },
     { name: "Nível 4: Frases grandes", content: "Amanheceu ensolarado, mas o vento frio trouxe a melancolia e as núvens cinzentas de tristeza." },
     { name: "Nível 4: Frases grandes", content: "Formatarei meu computador. Instalarei Linux! OO que acha, Pedro?" },
-    { name: "Nível 4: Frases grandes", content: "Sim, Bowie! Eu estou cara a cara com o homem que vendeu o mundo!" },
+    { name: "Nível 4: Textos", content: "O rato roeu a roupa do rei de Roma e a rainha reclamou que o rato roeu rápido demais. Três pratos de trigo para três tigres tristes comerem enquanto o rato roía outra roupa." },
+    { name: "Nível 4: Textos", content: "Era uma vez um coelhinho curioso que adorava explorar o jardim atrás de sua casa, um dia ele encontrou uma borboleta colorida e decidiu segui-la entre as flores, no caminho conheceu um passarinho que cantava alegremente no galho de uma árvore, os três viraram amigos e passaram a tarde brincando e rindo juntos, e quando o sol se pôs o coelhinho voltou para casa muito feliz por ter feito novos amigos." },
+    { name: "Nível 4: Textos", content: "Estudar informática é importante porque ajuda a entender e usar melhor as tecnologias presentes no dia a dia. Com esse conhecimento, é possível trabalhar com mais eficiência, resolver problemas e acessar mais oportunidades profissionais. Além disso, a informática desenvolve o raciocínio lógico e prepara as pessoas para um mundo cada vez mais digital..." },
+    { name: "Nível 4: Textos", content: "Eu sempre me emociono quando ouço Michael Jackson; parece que cada música fala direto comigo, especialmente quando toca “Heal the world, make it a better place”. Às vezes fico arrepiado lembrando que preciso mudar também, e a frase “I'm starting with the man in the mirror” sempre me pega. Tem dias solitários em que coloco os fones e sinto conforto em “You are not alone, I am here with you”. Quando a emoção aperta de verdade, eu quase choro escutando “Will you be there”. E no meio de tudo isso, ainda sinto a força de “They don't care about us”, que me faz refletir sobre o mundo." }
     
 ];
 
