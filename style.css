@@ -1,0 +1,91 @@
+:root {
+    --primary: #2563eb;
+    --bg: #f8fafc;
+    --text: #1e293b;
+    --success: #22c55e;
+    --error: #ef4444;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.screen { transition: all 0.3s ease; }
+.hidden { display: none; }
+
+.grid-modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+button {
+    padding: 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #e2e8f0;
+    transition: 0.2s;
+}
+
+button:hover { background: #cbd5e1; }
+.btn-career { background: var(--primary); color: white; grid-column: span 2; }
+.btn-career:hover { background: #1d4ed8; }
+
+#text-display {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 8px;
+    min-height: 80px;
+}
+
+.correct { color: var(--success); }
+.incorrect { color: var(--error); background: #fee2e2; }
+
+#text-input {
+    width: 100%;
+    height: 100px;
+    padding: 15px;
+    font-size: 1.2rem;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    resize: none;
+    box-sizing: border-box;
+}
+
+#text-input:focus { border-color: var(--primary); outline: none; }
+
+.game-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

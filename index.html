@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Master - Curso de Digitação</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Mestre da Digitação</h1>
+        <div id="stats">
+            <span>Nível: <strong id="level-display">Livre</strong></span>
+            <span>Progresso: <strong id="progress-display">0%</strong></span>
+        </div>
+    </header>
+
+    <main id="game-container">
+        <div id="mode-selection" class="screen">
+            <h2>Escolha seu Caminho</h2>
+            <div class="grid-modes">
+                <button onclick="startMode('basico')">Básico (Teclas)</button>
+                <button onclick="startMode('medio')">Médio (Palavras)</button>
+                <button onclick="startMode('avancado')">Avançado (Frases)</button>
+                <button class="btn-career" onclick="startMode('carreira')">Modo Carreira</button>
+            </div>
+        </div>
+
+        <div id="play-area" class="screen hidden">
+            <h3 id="lesson-title">Lição</h3>
+            <div id="text-display" class="unselectable"></div>
+            <textarea id="text-input" autofocus placeholder="Comece a digitar aqui..." spellcheck="false"></textarea>
+            
+            <div class="game-footer">
+                <div id="timer">Tempo: 0s</div>
+                <div id="wpm">WPM: 0</div>
+                <button id="btn-back" onclick="resetGame()">Voltar</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
