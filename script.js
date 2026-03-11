@@ -3,7 +3,7 @@ const levels = [
     { name: "Nível 1: Letras Base", content: "qwert yuiop" },
     { name: "Nível 1: Letras Base", content: "zxcvb nm" },
     { name: "Nível 2: Acentuação", content: "café maçã avô você" },
-    { name: "Nível 4: Textos", content: "Eu sempre me emociono quando ouço Michael Jackson; parece que cada música fala direto comigo, especialmente quando toca “Heal the world, make it a better place”. Às vezes fico arrepiado lembrando que preciso mudar também, e a frase “I'm starting with the man in the mirror” sempre me pega. Tem dias solitários em que coloco os fones e sinto conforto em “You are not alone, I am here with you”. Quando a emoção aperta de verdade, eu quase choro escutando “Will you be there”. E no meio de tudo isso, ainda sinto a força de “They don't care about us”, que me faz refletir sobre o mundo." },
+    { name: "Nível 4: Textos", content: "Eu sempre me emociono quando ouço Michael Jackson; parece que cada música fala direto comigo, especialmente quando toca Heal the world, make it a better place. Às vezes fico arrepiado lembrando que preciso mudar também, e a frase I'm starting with the man in the mirror sempre me pega. Tem dias solitários em que coloco os fones e sinto conforto em You are not alone, I am here with you. Quando a emoção aperta de verdade, eu quase choro escutando Will you be there. E no meio de tudo isso, ainda sinto a força de They don't care about us, que me faz refletir sobre o mundo." },
     { name: "Nível 2: Acentuação", content: "moto FeLiCiDaDe arroz DJ" },
     { name: "Nível 2: Acentuação", content: "Geografia variável anjo avó" },
     { name: "Nível 3: Frases Curtas", content: "O sol brilha para todos." },
