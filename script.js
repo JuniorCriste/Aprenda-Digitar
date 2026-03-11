@@ -19,7 +19,6 @@ const levels = [
     { name: "Nível 4: Textos", content: "Eu sempre me emociono quando ouço Michael Jackson; parece que cada música fala direto comigo, especialmente quando toca “Heal the world, make it a better place”. Às vezes fico arrepiado lembrando que preciso mudar também, e a frase “I'm starting with the man in the mirror” sempre me pega. Tem dias solitários em que coloco os fones e sinto conforto em “You are not alone, I am here with you”. Quando a emoção aperta de verdade, eu quase choro escutando “Will you be there”. E no meio de tudo isso, ainda sinto a força de “They don't care about us”, que me faz refletir sobre o mundo." }
 
 ];
-
 let currentLevelIdx = 0;
 let currentCharIdx = 0;
 let mistakes = 0;
@@ -30,8 +29,10 @@ let timerInterval = null;
 const wordDisplay = document.getElementById('word-display');
 const hiddenInput = document.getElementById('hidden-input');
 const wpmDisplay = document.getElementById('wpm-display');
+const progressBar = document.getElementById('progress-bar');
+const mistakeCount = document.getElementById('mistake-count');
 
-// --- ÁUDIO ---
+// --- ÁUDIO (Web Audio API) ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(f, t, v, d) {
     const o = audioCtx.createOscillator();
@@ -43,14 +44,15 @@ function playSound(f, t, v, d) {
     o.start(); o.stop(audioCtx.currentTime + d);
 }
 
+// --- LOGICA DE RENDERIZAÇÃO ---
 function loadLevel() {
     const text = levels[currentLevelIdx].content;
     document.getElementById('level-name').innerText = levels[currentLevelIdx].name;
     wordDisplay.innerHTML = '';
     currentCharIdx = 0;
-    startTime = null; // Reinicia o tempo
+    startTime = null;
     clearInterval(timerInterval);
-    wpmDisplay.innerText = "0";
+    if(wpmDisplay) wpmDisplay.innerText = "0";
 
     const words = text.split(' ');
     let charCounter = 0;
@@ -66,6 +68,7 @@ function loadLevel() {
             charCounter++;
         }
     });
+    
     hiddenInput.value = "";
     updateUI();
 }
@@ -78,26 +81,26 @@ function createCharBox(char, colorClass, index) {
     wordDisplay.appendChild(box);
 }
 
-// --- CONTROLO DE VELOCIDADE (WPM) ---
+// --- CONTROLE DE WPM ---
 function startTimer() {
     startTime = new Date();
     timerInterval = setInterval(() => {
         const timeElapsed = (new Date() - startTime) / 60000; // minutos
         if (timeElapsed > 0) {
             const wpm = Math.round((currentCharIdx / 5) / timeElapsed);
-            wpmDisplay.innerText = wpm > 0 ? wpm : 0;
+            if(wpmDisplay) wpmDisplay.innerText = wpm > 0 ? wpm : 0;
         }
     }, 1000);
 }
 
-// --- ACENTOS E INPUT ---
+// --- INPUT E ACENTUAÇÃO ---
 hiddenInput.addEventListener('compositionstart', () => isComposing = true);
 hiddenInput.addEventListener('compositionend', (e) => {
     isComposing = false;
     handleInput(e.data);
 });
 hiddenInput.addEventListener('input', (e) => {
-    if (!startTime && e.data) startTimer(); // Inicia o tempo na primeira tecla
+    if (!startTime && e.data) startTimer();
     if (!isComposing && e.data) handleInput(e.data);
 });
 
@@ -109,8 +112,11 @@ function handleInput(typedChar) {
         playSound(600, 'sine', 0.1, 0.1);
         boxes[currentCharIdx].classList.replace('current', 'correct');
         currentCharIdx++;
+        
         if (currentCharIdx < targetText.length) {
             boxes[currentCharIdx].classList.add('current');
+            // Scroll automático para a letra atual
+            boxes[currentCharIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
             clearInterval(timerInterval);
             nextLevel();
@@ -129,7 +135,7 @@ function nextLevel() {
     if (currentLevelIdx < levels.length) {
         setTimeout(loadLevel, 300);
     } else {
-        alert("Parabéns! Você concluiu o curso!");
+        alert("Excelente! Você completou todos os módulos disponíveis.");
         currentLevelIdx = 0;
         loadLevel();
     }
@@ -137,9 +143,10 @@ function nextLevel() {
 
 function updateUI() {
     const progress = (currentLevelIdx / levels.length) * 100;
-    document.getElementById('progress-bar').style.width = `${progress}%`;
-    document.getElementById('mistake-count').innerText = mistakes;
+    if(progressBar) progressBar.style.width = `${progress}%`;
+    if(mistakeCount) mistakeCount.innerText = mistakes;
 }
 
+// Foco automático
 document.addEventListener('keydown', () => hiddenInput.focus());
 window.addEventListener('load', loadLevel);
