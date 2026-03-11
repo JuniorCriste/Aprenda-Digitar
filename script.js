@@ -1,24 +1,20 @@
 const levels = [
     { name: "Nível 1: Letras Base", content: "asdfg hjklç" },
-    { name: "Nível 2: Acentuação Simples", content: "café maçã avô você" },
+    { name: "Nível 2: Acentuação", content: "café maçã avô você" },
     { name: "Nível 3: Frases Curtas", content: "O sol brilha para todos." },
-    { name: "Nível 4: Desafio Profissional", content: "A digitação rápida requer muita prática e paciência." }
+    { name: "Nível 4: Desafio Final", content: "A digitação rápida exige prática constante." }
 ];
 
 let currentLevelIdx = 0;
 let currentCharIdx = 0;
 let mistakes = 0;
-let startTime = null;
+let isComposing = false; // Trava para acentos
 
 const wordDisplay = document.getElementById('word-display');
 const hiddenInput = document.getElementById('hidden-input');
-const progressBar = document.getElementById('progress-bar');
-const accuracyText = document.getElementById('accuracy');
-const mistakeText = document.getElementById('mistake-count');
 
-// --- SISTEMA DE SOM (Web Audio API) ---
+// --- SISTEMA DE SOM ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
 function playSound(freq, type, vol, duration) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -31,12 +27,10 @@ function playSound(freq, type, vol, duration) {
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
 }
+const soundSuccess = () => playSound(600, 'sine', 0.1, 0.1);
+const soundError = () => playSound(150, 'triangle', 0.2, 0.2);
 
-const soundSuccess = () => playSound(580, 'sine', 0.1, 0.1);
-const soundError = () => playSound(120, 'triangle', 0.2, 0.2);
-
-// --- LÓGICA DO JOGO ---
-
+// --- LÓGICA DE CARREGAMENTO ---
 function loadLevel() {
     const level = levels[currentLevelIdx];
     document.getElementById('level-name').innerText = level.name;
@@ -50,27 +44,37 @@ function loadLevel() {
         if (i === 0) box.classList.add('current');
         wordDisplay.appendChild(box);
     });
-    
-    updateUI();
+    hiddenInput.value = "";
 }
 
-// O segredo para os acentos é observar o valor final do input
+// --- CONTROLE DE ACENTUAÇÃO (COMPOSITION) ---
+hiddenInput.addEventListener('compositionstart', () => {
+    isComposing = true; // Usuário apertou o acento
+});
+
+hiddenInput.addEventListener('compositionend', (e) => {
+    isComposing = false; // Usuário terminou de combinar (ex: acento + e)
+    handleInput(e.data); // Valida o caractere final gerado
+});
+
 hiddenInput.addEventListener('input', (e) => {
-    if (!startTime) startTime = new Date();
-    
+    // Se não estiver no meio de uma acentuação, valida caracteres normais
+    if (!isComposing && e.inputType !== "deleteContentBackward") {
+        handleInput(e.data);
+    }
+});
+
+function handleInput(typedChar) {
+    if (!typedChar) return;
+
     const targetText = levels[currentLevelIdx].content;
-    const typedValue = e.target.value; // Pega o que foi digitado (ex: "é")
     const expectedChar = targetText[currentCharIdx];
     const boxes = document.querySelectorAll('.char-box');
 
-    if (typedValue === "") return;
-
-    // Compara o caractere completo (incluindo o acento já processado pelo navegador)
-    if (typedValue === expectedChar) {
+    if (typedChar === expectedChar) {
         soundSuccess();
         boxes[currentCharIdx].classList.replace('current', 'correct');
         boxes[currentCharIdx].classList.remove('wrong');
-        
         currentCharIdx++;
         
         if (currentCharIdx < targetText.length) {
@@ -78,48 +82,32 @@ hiddenInput.addEventListener('input', (e) => {
         } else {
             nextLevel();
         }
-        e.target.value = ""; // Limpa para o próximo
     } else {
-        // Se o que foi digitado não é o começo de um caractere composto
-        // Isso evita que o acento sozinho conte como erro antes da letra
-        if (!expectedChar.startsWith(typedValue)) {
-            soundError();
-            boxes[currentCharIdx].classList.add('wrong');
-            mistakes++;
-            e.target.value = ""; // Limpa erro
-        }
+        soundError();
+        boxes[currentCharIdx].classList.add('wrong');
+        mistakes++;
     }
+    
+    hiddenInput.value = ""; // Limpa para a próxima tecla
     updateUI();
-});
+}
 
 function nextLevel() {
     currentLevelIdx++;
     if (currentLevelIdx < levels.length) {
-        setTimeout(loadLevel, 500);
+        setTimeout(loadLevel, 300);
     } else {
-        alert("Parabéns! Carreira concluída!");
+        alert("Carreira concluída com sucesso!");
         currentLevelIdx = 0;
-        mistakes = 0;
-        startTime = null;
         loadLevel();
     }
 }
 
 function updateUI() {
-    // Progresso baseado nos níveis
     const progress = (currentLevelIdx / levels.length) * 100;
-    progressBar.style.width = `${progress}%`;
-    
-    // Precisão
-    const totalTyped = currentCharIdx + mistakes;
-    const acc = totalTyped === 0 ? 100 : Math.round(((totalTyped - mistakes) / totalTyped) * 100);
-    accuracyText.innerText = `${acc}%`;
-    mistakeText.innerText = mistakes;
+    document.getElementById('progress-bar').style.width = `${progress}%`;
+    document.getElementById('mistake-count').innerText = mistakes;
 }
 
-// Manter o foco sempre no input
 document.addEventListener('keydown', () => hiddenInput.focus());
-window.addEventListener('click', () => hiddenInput.focus());
-
-// Iniciar
-loadLevel();
+window.addEventListener('load', loadLevel);
