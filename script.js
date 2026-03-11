@@ -1,88 +1,125 @@
-const courseData = [
-    { name: "Início: Letras Base", content: "asdfg hjklç" },
-    { name: "Expansão: Teclas Superiores", content: "querty uiop" },
-    { name: "Palavras Comuns", content: "casa café balão informática" },
-    { name: "Frases Completas", content: "A prática constante leva à perfeição técnica." },
-    { name: "Desafio Final", content: "Programação e lógica são fundamentais para o sucesso." }
+const levels = [
+    { name: "Nível 1: Letras Base", content: "asdfg hjklç" },
+    { name: "Nível 2: Acentuação Simples", content: "café maçã avô você" },
+    { name: "Nível 3: Frases Curtas", content: "O sol brilha para todos." },
+    { name: "Nível 4: Desafio Profissional", content: "A digitação rápida requer muita prática e paciência." }
 ];
 
-let currentLevel = 0;
-let currentCharIndex = 0;
+let currentLevelIdx = 0;
+let currentCharIdx = 0;
 let mistakes = 0;
-let startTime;
+let startTime = null;
 
 const wordDisplay = document.getElementById('word-display');
 const hiddenInput = document.getElementById('hidden-input');
 const progressBar = document.getElementById('progress-bar');
+const accuracyText = document.getElementById('accuracy');
+const mistakeText = document.getElementById('mistake-count');
 
-function initLevel() {
-    const text = courseData[currentLevel].content;
+// --- SISTEMA DE SOM (Web Audio API) ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(freq, type, vol, duration) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+const soundSuccess = () => playSound(580, 'sine', 0.1, 0.1);
+const soundError = () => playSound(120, 'triangle', 0.2, 0.2);
+
+// --- LÓGICA DO JOGO ---
+
+function loadLevel() {
+    const level = levels[currentLevelIdx];
+    document.getElementById('level-name').innerText = level.name;
     wordDisplay.innerHTML = '';
-    currentCharIndex = 0;
+    currentCharIdx = 0;
     
-    document.getElementById('level-name').innerText = courseData[currentLevel].name;
-
-    text.split('').forEach((char, i) => {
-        const span = document.createElement('div');
-        span.classList.add('char-box');
-        span.innerText = char === ' ' ? '␣' : char; // Representação visual para espaço
-        if (i === 0) span.classList.add('current');
-        wordDisplay.appendChild(span);
+    level.content.split('').forEach((char, i) => {
+        const box = document.createElement('div');
+        box.classList.add('char-box');
+        box.innerText = char === ' ' ? '␣' : char;
+        if (i === 0) box.classList.add('current');
+        wordDisplay.appendChild(box);
     });
     
-    updateProgress();
+    updateUI();
 }
 
-window.addEventListener('click', () => hiddenInput.focus());
-
+// O segredo para os acentos é observar o valor final do input
 hiddenInput.addEventListener('input', (e) => {
-    const targetText = courseData[currentLevel].content;
-    const typedChar = e.target.value.slice(-1);
-    const charBoxes = document.querySelectorAll('.char-box');
-
     if (!startTime) startTime = new Date();
-
-    if (typedChar === targetText[currentCharIndex]) {
-        charBoxes[currentCharIndex].classList.remove('current', 'wrong');
-        charBoxes[currentCharIndex].classList.add('correct');
-        
-        currentCharIndex++;
-        
-        if (currentCharIndex < targetText.length) {
-            charBoxes[currentCharIndex].classList.add('current');
-        } else {
-            finishLevel();
-        }
-    } else {
-        charBoxes[currentCharIndex].classList.add('wrong');
-        mistakes++;
-        updateAccuracy();
-    }
     
-    hiddenInput.value = ''; // Limpa para a próxima letra
+    const targetText = levels[currentLevelIdx].content;
+    const typedValue = e.target.value; // Pega o que foi digitado (ex: "é")
+    const expectedChar = targetText[currentCharIdx];
+    const boxes = document.querySelectorAll('.char-box');
+
+    if (typedValue === "") return;
+
+    // Compara o caractere completo (incluindo o acento já processado pelo navegador)
+    if (typedValue === expectedChar) {
+        soundSuccess();
+        boxes[currentCharIdx].classList.replace('current', 'correct');
+        boxes[currentCharIdx].classList.remove('wrong');
+        
+        currentCharIdx++;
+        
+        if (currentCharIdx < targetText.length) {
+            boxes[currentCharIdx].classList.add('current');
+        } else {
+            nextLevel();
+        }
+        e.target.value = ""; // Limpa para o próximo
+    } else {
+        // Se o que foi digitado não é o começo de um caractere composto
+        // Isso evita que o acento sozinho conte como erro antes da letra
+        if (!expectedChar.startsWith(typedValue)) {
+            soundError();
+            boxes[currentCharIdx].classList.add('wrong');
+            mistakes++;
+            e.target.value = ""; // Limpa erro
+        }
+    }
+    updateUI();
 });
 
-function finishLevel() {
-    currentLevel++;
-    if (currentLevel < courseData.length) {
-        initLevel();
+function nextLevel() {
+    currentLevelIdx++;
+    if (currentLevelIdx < levels.length) {
+        setTimeout(loadLevel, 500);
     } else {
-        alert("Parabéns! Você concluiu o treinamento profissional!");
-        currentLevel = 0;
-        initLevel();
+        alert("Parabéns! Carreira concluída!");
+        currentLevelIdx = 0;
+        mistakes = 0;
+        startTime = null;
+        loadLevel();
     }
 }
 
-function updateProgress() {
-    const perc = (currentLevel / courseData.length) * 100;
-    progressBar.style.width = `${perc}%`;
+function updateUI() {
+    // Progresso baseado nos níveis
+    const progress = (currentLevelIdx / levels.length) * 100;
+    progressBar.style.width = `${progress}%`;
+    
+    // Precisão
+    const totalTyped = currentCharIdx + mistakes;
+    const acc = totalTyped === 0 ? 100 : Math.round(((totalTyped - mistakes) / totalTyped) * 100);
+    accuracyText.innerText = `${acc}%`;
+    mistakeText.innerText = mistakes;
 }
 
-function updateAccuracy() {
-    const totalTyped = currentCharIndex + mistakes;
-    const acc = Math.round(((totalTyped - mistakes) / totalTyped) * 100);
-    document.getElementById('accuracy').innerText = `${acc}%`;
-}
+// Manter o foco sempre no input
+document.addEventListener('keydown', () => hiddenInput.focus());
+window.addEventListener('click', () => hiddenInput.focus());
 
-// Inicializa o primeiro nível
-initLevel();
+// Iniciar
+loadLevel();

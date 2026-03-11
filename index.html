@@ -3,41 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Pro - Treinamento</title>
+    <title>Aprenda Digitar - Treinamento Profissional</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="app-container">
     <nav class="top-bar">
-        <div class="logo">Typing<span>Pro</span></div>
+        <div class="logo">Aprenda<span>Digitar</span></div>
+        <div class="nav-status">
+            <span id="level-name">Carregando...</span>
+        </div>
         <div class="nav-icons">
-            <button title="Teclado">⌨️</button>
-            <button title="Som">🔊</button>
-            <button title="Configurações">⚙️</button>
+            <button title="Progresso">📊 <span id="accuracy">100%</span></button>
         </div>
     </nav>
 
     <main class="trainer-box">
-        <div class="level-info">
-            <span id="level-name">Modo Carreira</span>
-            <div class="progress-wrapper">
-                <div id="progress-bar" style="width: 0%"></div>
-            </div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
         </div>
 
         <div id="word-display" class="word-display"></div>
 
-        <input type="text" id="hidden-input" autofocus>
+        <input type="text" id="hidden-input" autocomplete="off" autofocus>
         
         <div class="keyboard-hint">
-            <p>Pressione a tecla correspondente para avançar</p>
+            Pressione as teclas para começar. Use acentos normalmente.
         </div>
     </main>
 
-    <div class="stats-panel">
-        <div class="stat">Precisão: <span id="accuracy">100%</span></div>
-        <div class="stat">WPM: <span id="wpm">0</span></div>
+    <div class="footer-stats">
+        <div class="stat-item">WPM: <span id="wpm">0</span></div>
+        <div class="stat-item">Erros: <span id="mistake-count">0</span></div>
     </div>
 </div>
 
